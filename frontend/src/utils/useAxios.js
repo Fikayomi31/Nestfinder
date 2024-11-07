@@ -1,12 +1,30 @@
 import axios from "axios"
+import { getRefreshedToken, isAcesssTokenExpired, setAuthUser } from "./auth"
+import { API_BASE_URL } from "./constants"
+import Cookies from "js-cookie"
 
-const apiInstance = axios.create({
-    baseURL: "http://127.0.0.1:8000/api/v1",
-    timeOut: 1000,
-    headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-    },
-});
 
-export default apiInstance
+const useAxios = () => {
+    const accessToken = Cookies.get("access_token")
+    const refreshToken = Cookies.get("refresh_token")
+
+    const axiosInstance = axios.create({
+        baseURL: API_BASE_URL,
+        headers: { Authorization: `Bearer ${accessToken}` },
+    })
+
+    axiosInstance.interceptors.request.use(async (req) => {
+        if (!isAcesssTokenExpired) {
+            return req
+        }
+
+        const response = await getRefreshedToken(refreshToken)
+        setAuthUser(response.access, response.refresh)
+        req.headers.Authorization = `Bearer ${response.data?.access}`
+        return req
+    })
+
+    return axiosInstance
+}
+
+export default useAxios

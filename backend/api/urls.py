@@ -5,8 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
 
-    # root api view
-    path('', api_views.ApiRootView.as_view()),
+   
 
     # Authentication Endpoint
     
